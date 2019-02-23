@@ -20,7 +20,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 	"runtime"
 	"strings"
@@ -34,16 +36,16 @@ import (
 func TestQueries(t *testing.T) {
 	_, thisFile, _, _ := runtime.Caller(0)
 	queryDir := path.Dir(thisFile) + "/queries"
-
+	fmt.Fprintf(os.Stderr, "A")
 	// For this test we DON'T want to start with an empty database.
-	dg := z.DgraphClientNoDropAll(":9180")
-
+	dg := z.DgraphClientNoDropAll(":9182")
+	fmt.Fprintf(os.Stderr, "B")
 	files, err := ioutil.ReadDir(queryDir)
 	x.CheckfNoTrace(err)
-
+	fmt.Fprintf(os.Stderr, "C")
 	for _, file := range files {
 		filename := queryDir + "/" + file.Name()
-
+		fmt.Fprintf(os.Stderr, "<")
 		reader, cleanup := chunker.FileReader(filename)
 		bytes, err := ioutil.ReadAll(reader)
 		x.CheckfNoTrace(err)
@@ -52,7 +54,9 @@ func TestQueries(t *testing.T) {
 
 		// The test query and expected result are separated by a delimiter.
 		bodies := strings.SplitN(contents, "\n---\n", 2)
+		fmt.Fprintf(os.Stderr, "-")
 		resp, err := dg.NewTxn().Query(context.Background(), bodies[0])
+		fmt.Fprintf(os.Stderr, ">")
 
 		t.Logf("running %s", file.Name())
 		if len(resp.GetJson()) > 0 {

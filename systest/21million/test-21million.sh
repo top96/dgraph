@@ -42,12 +42,12 @@ usage: $ME [-h|--help] [--loader=<bulk|live|none>] [--cleanup=<all|none|servers>
 
 options:
 
-    --loader        bulk=use dgraph bulk (default)
-                    live=use dgraph live
-                    none=use data volume from previous run
-    --cleanup       all=take down containers and data volume when done (default)
-                    servers=take down dgraph zero and alpha but leave data volume up
-                    none=leave up containers and data volume when done
+    --loader        bulk = use dgraph bulk (default)
+                    live = use dgraph live
+                    none = use data loaded by previous run
+    --cleanup       all = take down containers and data volume (default)
+                    servers = take down dgraph zero and alpha but leave data volume up
+                    none = leave up containers and data volume
 EOF
     exit 0
 fi
@@ -98,7 +98,7 @@ EOF
 fi
 
 Info "bringing up alpha container"
-DockerCompose up -d --force-recreate dg1 dg2
+DockerCompose up -d --force-recreate dg1
 
 Info "waiting for alpha to be ready"
 DockerCompose logs -f dg1 | grep -q -m1 "Server is ready"

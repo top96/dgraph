@@ -28,8 +28,8 @@ services:
         target: /gobin
         read_only: true
       - type: volume
-        source: data1
-        target: /data/dg
+        source: data
+        target: /data/dg1
     ports:
       - 8180:8180
       - 9180:9180
@@ -39,27 +39,5 @@ services:
       /gobin/dgraph alpha --my=dg1:7180 --zero=zero1:5080 -o 100 --logtostderr
                           --whitelist 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16 --lru_mb=1024
 
-  dg2:
-    image: dgraph/dgraph:latest
-    container_name: bank-dg2
-    working_dir: /data/dg2
-    volumes:
-      - type: bind
-        source: $GOPATH/bin
-        target: /gobin
-        read_only: true
-      - type: volume
-        source: data2
-        target: /data/dg
-    ports:
-      - 8182:8182
-      - 9182:9182
-    labels:
-      cluster: test
-    command: >
-      /gobin/dgraph alpha --my=dg2:7182 --zero=zero1:5080 -o 102 --logtostderr
-                          --whitelist 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16 --lru_mb=1024
-
 volumes:
-  data1:
-  data2:
+  data:

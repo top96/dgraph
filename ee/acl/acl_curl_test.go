@@ -30,13 +30,15 @@ const loginEndpoint = "http://localhost:8180/login"
 func TestCurlAuthorization(t *testing.T) {
 	glog.Infof("testing with port 9180")
 	dg := z.DgraphClientWithGroot(":9180")
-	createAccountAndData(t, dg)
+	userid := "test-curl-auth-user"
+	password := "password123"
+	createAccountAndData(t, dg, userid, password)
 
 	// test query through curl
 	accessJwt, refreshJwt, err := z.HttpLogin(&z.LoginParams{
 		Endpoint: loginEndpoint,
 		UserID:   userid,
-		Passwd:   userpassword,
+		Passwd:   password,
 	})
 	require.NoError(t, err, "login failed")
 
@@ -96,7 +98,7 @@ func TestCurlAuthorization(t *testing.T) {
 		shouldFail: false,
 	})
 
-	createGroupAndAcls(t, unusedGroup, false)
+	createGroupAndAcls(t, unusedGroup, false, "")
 	// wait for 35 seconds to ensure the new acl have reached all acl caches
 	glog.Infof("Sleeping for 35 seconds for acl caches to be refreshed")
 	time.Sleep(35 * time.Second)
@@ -125,7 +127,7 @@ func TestCurlAuthorization(t *testing.T) {
 		failMsg:    "PermissionDenied",
 	})
 
-	createGroupAndAcls(t, devGroup, true)
+	createGroupAndAcls(t, devGroup, true, userid)
 	glog.Infof("Sleeping for 35 seconds for acl caches to be refreshed")
 	time.Sleep(35 * time.Second)
 	// refresh the jwts again

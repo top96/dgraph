@@ -304,7 +304,7 @@ func createGroupAndAcls(t *testing.T, group string, addUserToGroup bool, userid 
 	addReadPermCmd1 := exec.Command(os.ExpandEnv("$GOPATH/bin/dgraph"),
 		"acl", "mod",
 		"-d", dgraphEndpoint,
-		"-g", group, "-p", predicateToRead, "-P", strconv.Itoa(int(Read.Code)), "-x",
+		"-g", group, "-p", predicateToRead, "-m", strconv.Itoa(int(Read.Code)), "-x",
 		"password")
 	if errOutput, err := addReadPermCmd1.CombinedOutput(); err != nil {
 		t.Fatalf("Unable to add READ permission on %s to group %s: %v",
@@ -315,7 +315,7 @@ func createGroupAndAcls(t *testing.T, group string, addUserToGroup bool, userid 
 	addReadPermCmd2 := exec.Command(os.ExpandEnv("$GOPATH/bin/dgraph"),
 		"acl", "mod",
 		"-d", dgraphEndpoint,
-		"-g", group, "-p", queryAttr, "-P", strconv.Itoa(int(Read.Code)), "-x",
+		"-g", group, "-p", queryAttr, "-m", strconv.Itoa(int(Read.Code)), "-x",
 		"password")
 	if errOutput, err := addReadPermCmd2.CombinedOutput(); err != nil {
 		t.Fatalf("Unable to add READ permission on %s to group %s: %v", queryAttr, group,
@@ -326,7 +326,7 @@ func createGroupAndAcls(t *testing.T, group string, addUserToGroup bool, userid 
 	addWritePermCmd := exec.Command(os.ExpandEnv("$GOPATH/bin/dgraph"),
 		"acl", "mod",
 		"-d", dgraphEndpoint,
-		"-g", group, "-p", predicateToWrite, "-P", strconv.Itoa(int(Write.Code)), "-x",
+		"-g", group, "-p", predicateToWrite, "-m", strconv.Itoa(int(Write.Code)), "-x",
 		"password")
 	if errOutput, err := addWritePermCmd.CombinedOutput(); err != nil {
 		t.Fatalf("Unable to add permission on %s to group %s: %v", predicateToWrite, group,
@@ -337,7 +337,7 @@ func createGroupAndAcls(t *testing.T, group string, addUserToGroup bool, userid 
 	addModifyPermCmd := exec.Command(os.ExpandEnv("$GOPATH/bin/dgraph"),
 		"acl", "mod",
 		"-d", dgraphEndpoint,
-		"-g", group, "-p", predicateToAlter, "-P", strconv.Itoa(int(Modify.Code)), "-x",
+		"-g", group, "-p", predicateToAlter, "-m", strconv.Itoa(int(Modify.Code)), "-x",
 		"password")
 	if errOutput, err := addModifyPermCmd.CombinedOutput(); err != nil {
 		t.Fatalf("Unable to add permission on %s to group %s: %v", predicateToAlter, group,
@@ -418,7 +418,7 @@ func testPredicateRegex(t *testing.T) {
 	addReadToNameCmd := exec.Command(os.ExpandEnv("$GOPATH/bin/dgraph"),
 		"acl", "mod",
 		"-d", dgraphEndpoint,
-		"-g", devGroup, "--pred", "name", "-P", strconv.Itoa(int(Read.Code)|int(Write.Code)),
+		"-g", devGroup, "--pred", "name", "-m", strconv.Itoa(int(Read.Code)|int(Write.Code)),
 		"-x",
 		"password")
 	if errOutput, err := addReadToNameCmd.CombinedOutput(); err != nil {
@@ -431,7 +431,7 @@ func testPredicateRegex(t *testing.T) {
 	addReadWriteToRegexPermCmd := exec.Command(os.ExpandEnv("$GOPATH/bin/dgraph"),
 		"acl", "mod",
 		"-d", dgraphEndpoint,
-		"-g", devGroup, "--pred_regex", predRegex, "-P",
+		"-g", devGroup, "-P", predRegex, "-m",
 		strconv.Itoa(int(Read.Code)|int(Write.Code)), "-x", "password")
 	if errOutput, err := addReadWriteToRegexPermCmd.CombinedOutput(); err != nil {
 		t.Fatalf("Unable to add READ+WRITE permission on %s to group %s:%v",

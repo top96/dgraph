@@ -38,11 +38,11 @@ notes:
 
 function getopt {
     # Mac OS X installs BSD getopt, so the GNU version
-    # must be explicitly installed in another location
+    # must be explicitly installed elsewhere
     if [[ $(uname -s) != Darwin ]]; then
-        /usr/bin/getopt "$@"
+        exec /usr/bin/getopt "$@"
     else
-        /usr/local/bin/getopt "$@"
+        exec /usr/local/bin/getopt "$@"
     fi
 }
 

@@ -36,6 +36,16 @@ notes:
     Tests are always run with -short=true."
 }
 
+function getopt {
+    # Mac OS X installs BSD getopt, so the GNU version
+    # must be explicitly installed in another location
+    if [[ $(uname -s) != Darwin ]]; then
+        /usr/bin/getopt "$@"
+    else
+        /usr/local/bin/getopt "$@"
+    fi
+}
+
 function Info {
     echo -e "\e[1;36mINFO: $*\e[0m"
 }
@@ -110,8 +120,7 @@ function RunCustomClusterTests {
 # MAIN
 #
 
-ARGS=$(/usr/bin/getopt -n$ME -o"hucfvn" -l"help,unit,cluster,full,verbose,no-cache" -- "$@") \
-    || exit 1
+ARGS=$(getopt -n$ME -o"hucfvn" -l"help,unit,cluster,full,verbose,no-cache" -- "$@") || exit 1
 eval set -- "$ARGS"
 while true; do
     case "$1" in

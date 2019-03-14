@@ -47,6 +47,7 @@ func checkOutput(t *testing.T, cmd *exec.Cmd, shouldFail bool) string {
 }
 
 func testCreateAndDeleteUsers(t *testing.T) {
+	t.Parallel()
 	// clean up the user to allow repeated running of this test
 	userid := "test-create-delete-user"
 	password := "password123"
@@ -89,6 +90,7 @@ func resetUser(t *testing.T, userid string, password string) {
 }
 
 func testReservedPredicates(t *testing.T) {
+	t.Parallel()
 	// This test uses the groot account to ensure that reserved predicates
 	// cannot be altered even if the permissions allow it.
 	ctx := context.Background()
@@ -128,7 +130,7 @@ func testUnautherizedAccess(t *testing.T, dg *dgo.Dgraph) {
 		t.Fatalf("unable to login using the account %v", userid)
 	}
 
-	createGroupAndAcls(t, unusedGroup, false, "")
+	createGroupAndAcls(t, "test-unauthorized-unused-group", false, "")
 	// wait for 35 seconds to ensure the new acl have reached all acl caches
 	glog.Infof("Sleeping for 35 seconds for acl caches to be refreshed")
 	time.Sleep(35 * time.Second)
@@ -146,6 +148,7 @@ func testAuthorization(t *testing.T, endpoints []string) {
 	createAccountAndData(t, dg, userid, password)
 
 	// create the dev group and add the user to it
+	devGroup := "test-authorization-dev"
 	createGroupAndAcls(t, devGroup, true, userid)
 	// wait for 35 seconds to ensure the new acl have reached all acl caches
 	glog.Infof("Sleeping for 35 seconds for acl caches to be refreshed")
@@ -153,6 +156,7 @@ func testAuthorization(t *testing.T, endpoints []string) {
 
 	for _, endpoint := range endpoints {
 		t.Run(fmt.Sprintf("AuthorazitionOn%s", endpoint), func(t *testing.T) {
+			t.Parallel()
 			ctx := context.Background()
 			if err := dg.Login(ctx, userid, password); err != nil {
 				t.Fatalf("unable to login using the account %v", userid)
@@ -176,8 +180,7 @@ var predicateToRead = "predicate_to_read"
 var queryAttr = "name"
 var predicateToWrite = "predicate_to_write"
 var predicateToAlter = "predicate_to_alter"
-var devGroup = "dev"
-var unusedGroup = "unusedGroup"
+
 var rootDir = filepath.Join(os.TempDir(), "acl_test")
 var query = fmt.Sprintf(`
 	{
@@ -258,12 +261,14 @@ func createAccountAndData(t *testing.T, dg *dgo.Dgraph, userid string, password 
 	if err := dg.Login(ctx, x.GrootId, "password"); err != nil {
 		t.Fatalf("unable to login using the groot account:%v", err)
 	}
-	op := api.Operation{
-		DropAll: true,
-	}
-	if err := dg.Alter(ctx, &op); err != nil {
-		t.Fatalf("Unable to cleanup db:%v", err)
-	}
+	/*
+		op := api.Operation{
+			DropAll: true,
+		}
+		if err := dg.Alter(ctx, &op); err != nil {
+			t.Fatalf("Unable to cleanup db:%v", err)
+		}
+	*/
 	require.NoError(t, dg.Alter(ctx, &api.Operation{
 		Schema: fmt.Sprintf(`%s: string @index(exact) .`, predicateToRead),
 	}))
@@ -345,34 +350,8 @@ func createGroupAndAcls(t *testing.T, group string, addUserToGroup bool, userid 
 	}
 }
 
-func testPasswordReset(t *testing.T) {
-	glog.Infof("testing with port 9180")
-	dg := z.DgraphClientWithGroot(":9180")
-	userid := "test-password-reset-user"
-	password := "password123"
-	createAccountAndData(t, dg, userid, password)
-	// test login using the current password
-	ctx := context.Background()
-	err := dg.Login(ctx, userid, password)
-	require.NoError(t, err, "Logging in with the current password should have succeeded")
-
-	// reset password for the user alice
-	newPassword := password + "123"
-	chPdCmd := exec.Command("dgraph", "acl", "mod", "-d", dgraphEndpoint, "-u",
-		userid, "--new_password", newPassword, "-x", "password")
-	checkOutput(t, chPdCmd, false)
-	glog.Infof("Successfully changed password for %v", userid)
-
-	// test that logging in using the old password should now fail
-	err = dg.Login(ctx, userid, password)
-	require.Error(t, err, "Logging in with old password should no longer work")
-
-	// test logging in using the new password
-	err = dg.Login(ctx, userid, newPassword)
-	require.NoError(t, err, "Logging in with new password should work now")
-}
-
 func testPredicateRegex(t *testing.T) {
+	t.Parallel()
 	glog.Infof("testing with port 9180")
 	dg := z.DgraphClientWithGroot(":9180")
 	userid := "test-predicate-regex-user"
@@ -386,7 +365,7 @@ func testPredicateRegex(t *testing.T) {
 	queryPredicateWithUserAccount(t, dg, false)
 	mutatePredicateWithUserAccount(t, dg, false)
 	alterPredicateWithUserAccount(t, dg, false)
-	createGroupAndAcls(t, unusedGroup, false, "")
+	createGroupAndAcls(t, "test-predicate-regex-unused", false, "")
 
 	// wait for 35 seconds to ensure the new acl have reached all acl caches
 	glog.Infof("Sleeping for 35 seconds for acl caches to be refreshed")
@@ -398,6 +377,7 @@ func testPredicateRegex(t *testing.T) {
 	alterPredicateWithUserAccount(t, dg, true)
 
 	// create a new group
+	devGroup := "test-predicate-regex-dev"
 	createGroupCmd := exec.Command(os.ExpandEnv("$GOPATH/bin/dgraph"),
 		"acl", "add",
 		"-d", dgraphEndpoint,
@@ -448,6 +428,7 @@ func testPredicateRegex(t *testing.T) {
 }
 
 func testAccessWithoutLoggingIn(t *testing.T) {
+	t.Parallel()
 	dg := z.DgraphClientWithGroot(":9180")
 	userid := "test-access-without-logging-user"
 	password := "password123"
@@ -465,9 +446,9 @@ func TestAclInParallel(t *testing.T) {
 		t.Run("TestCreateAndDeleteUsers", testCreateAndDeleteUsers)
 		t.Run("TestReservedPredicates", testReservedPredicates)
 		t.Run("TestAuthorization", func(t *testing.T) {
+			t.Parallel()
 			testAuthorization(t, []string{":9180", "9182"})
 		})
-		t.Run("testPasswordReset", testPasswordReset)
 		t.Run("testPredicateRegex", testPredicateRegex)
 		t.Run("TestAccessWithoutLoggingIn", testAccessWithoutLoggingIn)
 	})

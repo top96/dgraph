@@ -98,7 +98,7 @@ func TestCurlAuthorization(t *testing.T) {
 		shouldFail: false,
 	})
 
-	createGroupAndAcls(t, unusedGroup, false, "")
+	createGroupAndAcls(t, "test-curl-acl-unused-group", false, "")
 	// wait for 35 seconds to ensure the new acl have reached all acl caches
 	glog.Infof("Sleeping for 35 seconds for acl caches to be refreshed")
 	time.Sleep(35 * time.Second)
@@ -127,7 +127,7 @@ func TestCurlAuthorization(t *testing.T) {
 		failMsg:    "PermissionDenied",
 	})
 
-	createGroupAndAcls(t, devGroup, true, userid)
+	createGroupAndAcls(t, "test-curl-acl-dev", true, userid)
 	glog.Infof("Sleeping for 35 seconds for acl caches to be refreshed")
 	time.Sleep(35 * time.Second)
 	// refresh the jwts again
